@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0a7ed2e1-dc4f-4687-b1ce-b1fbc488a9d4" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="d257fa9c-675e-4c09-9a81-9ed7faef7d25" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Jaya@57422" database="employeedata" />
+	</db:config>
+	<flow name="dbflowFlow" doc:id="9f99e1dd-4df0-4a34-b8c7-b43172d19933" >
+		<http:listener doc:id="d08eb916-6b7a-45cd-863d-5d9efa9f4d59" doc:name="" path="insert" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transform Message" doc:id="db61d5f8-079a-4d0c-bd20-a416e9ba041f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+1 to 150 map {
+
+	"EmpId": if ($$ == 7) "Jaya" else 100+$$,
+	"EmpName":"Jay",
+	"Age":28,
+	"Address": "Hyd"
+	
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="d1239d9d-a539-4ffb-acd3-0deefdbc2918" >
+			<logger level="INFO" doc:name="Logger" doc:id="b69067e2-eeac-41a5-a8ee-1b086356f12a" message='#[payload]' />
+			<db:insert doc:name="Insert" doc:id="3f63ba96-2dd4-45b1-941a-e32a5320cfc5" config-ref="Database_Config">
+				<db:sql ><![CDATA[insert into employeedata.emp (EmpId,EmpName,Age,Address)
+values(:EmpId, :EmpName, :Age, :Address);]]></db:sql>
+				<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+			</db:insert>
+		</foreach>
+	</flow>
+	<flow name="dbflowFlow1" doc:id="5057c95b-c8ca-4e51-83de-bb3aa52ba623" >
+		<http:listener doc:name="Listener" doc:id="744896a1-3f72-4bb3-9be9-de84df8f14e4" config-ref="HTTP_Listener_config" path="/parallel"/>
+		<ee:transform doc:name="Transform Message" doc:id="38d2d9b9-e9f9-4962-9a5c-e02e941b6b19" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+1 to 150 map {
+
+	"EmpId": 100+$$,
+	"EmpName":"Jay",
+	"Age":28,
+	"Address": "Hyd"
+	
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="ea5d8486-0614-4204-a951-2cf6b927b833" >
+			<logger level="INFO" doc:name="Logger" doc:id="0b0774cd-0257-46e5-8f4a-c0a96c5e483a" message="#[payload]" />
+			<db:insert doc:name="Insert" doc:id="1f43f0a0-be4f-414c-a31f-10422f583eb0" config-ref="Database_Config">
+			<db:sql><![CDATA[insert into employeedata.emp (EmpId,EmpName,Age,Address)
+values(:EmpId, :EmpName, :Age, :Address);]]></db:sql>
+			<db:input-parameters><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+		</parallel-foreach>
+	</flow>
+	<flow name="dbflowFlow2" doc:id="fd5abdd9-17a0-4fa6-af6c-82b7b7ff949c" >
+		<http:listener doc:name="Listener" doc:id="b2e32841-c794-42e7-a514-d6551dc2c846" config-ref="HTTP_Listener_config" path="/get"/>
+		<set-variable value="#[attributes.queryParams.EmpId]" doc:name="EmpId" doc:id="d8f44b83-f547-49f3-aca3-4c5b4e6d4bec" variableName="EmpId"/>
+		<db:select doc:name="Select" doc:id="62da8812-70a7-4077-ba31-90d0a4204475" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from employeedata.emp where EmpId= :value;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'value': vars.EmpId
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="cc836581-aee2-493d-88d6-41ede9a367f2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a95346e5-4666-4311-8711-0343b0663b8b" message="#[payload]"/>
+	</flow>
+	<flow name="dbflowFlow3" doc:id="e2e862e3-b1d0-4e8b-bb92-d4ce7200f077" >
+		<http:listener doc:name="Listener" doc:id="bdb9fe04-d90b-4e4b-8a1f-f9abe649e0be" config-ref="HTTP_Listener_config" path="/update"/>
+		<db:update doc:name="Update" doc:id="d87f46fd-43ac-4af7-bf79-16ffdf749526" config-ref="Database_Config">
+			<db:sql ><![CDATA[update employeedata.emp
+set EmpName = 'Kumar', Age=25,Address='Nellore'
+where EmpId=140]]></db:sql>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="f32b9b3f-7f43-4ffe-b145-953c5d484472" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a880e6e2-25bb-4cda-a34d-20fc7af82ae1" message="#[payload]"/>
+	</flow>
+	<flow name="dbflowFlow4" doc:id="3fef8c2f-63ed-49c5-b0df-0c5808fe82ce" >
+		<http:listener doc:name="Listener" doc:id="6eb9d0e9-3b31-41a3-b0f4-5f578461a5de" config-ref="HTTP_Listener_config" path="/delete"/>
+		<set-variable value="#[attributes.queryParams.EmpId]" doc:name="EmpId" doc:id="8327f17d-722a-4fd7-83a4-b042b0423156" variableName="EmpId"/>
+		<db:delete doc:name="Delete" doc:id="01d156c1-45ad-4675-8dbe-924a19ca7c8b" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from employeedata.emp where EmpId = :value;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'value': vars.EmpId
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="f2604ea8-bcee-4971-9b64-1d66014603b8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json	
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="02af6509-8050-4212-aa61-3d5b0c3fa88e" message="#['Delete Operation Executed']"/>
+	</flow>
+</mule>
