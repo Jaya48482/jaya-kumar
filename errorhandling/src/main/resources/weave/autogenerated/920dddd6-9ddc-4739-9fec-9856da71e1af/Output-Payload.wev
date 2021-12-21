@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_920dddd6_9ddc_4739_9fec_9856da71e1af_Output_Payload = Array<{|  EmpId: Number,   EmpName?: String,   Age?: String,   Address?: String|}>
+

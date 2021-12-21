@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="feccc8bb-ffb3-450c-a821-01b00d8683c7" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="dataweaveFlow" doc:id="038c8b99-f216-4d02-ad19-b62dc29f6af3" >
+		<http:listener doc:name="Listener" doc:id="cc8b66b3-ad7e-4710-be41-d50654ec8e91" config-ref="HTTP_Listener_config" path="/dw"/>
+		<ee:transform doc:name="Transform Message JSON to ALL" doc:id="f7031108-2017-4741-bc9a-78599eafa2bb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+{
+	Name: payload.Name,
+	"Account Name": payload."Account Name",
+	Title: payload.Title,
+	Phone: payload.Phone,
+	Email: payload.Email
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dataweaveFlow1" doc:id="6eb763a0-8a01-444a-b3b6-c47b7ea97042" >
+		<ee:transform doc:name="Transform Message XML  to all" doc:id="3cd94ac8-d88e-424e-b21b-1cccbd53e382" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+[{
+	name: payload.food.name,
+	price: payload.food.price,
+	description: payload.food.description,
+	calories: payload.food.calories as String
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

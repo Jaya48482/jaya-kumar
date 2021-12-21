@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="04a3c6b6-fb23-4ff6-9bf6-ae703eb3a107" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="b1e0f6d1-aa91-44b4-800b-a02b5132d2dd" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Jaya@57422" database="employeedata" />
+	</db:config>
+	<configuration doc:name="Configuration" doc:id="53d60dc3-3c73-4c66-bb6c-d9196bb9b3a7" defaultErrorHandler-ref="global_errorError_Handler" />
+	<sub-flow name="errorhandlingSub_Flow" doc:id="920dddd6-9ddc-4739-9fec-9856da71e1af" >
+		<try doc:name="Try" doc:id="02f29a57-ba0f-4fbd-888e-68b3f94516b6" >
+			<logger level="INFO" doc:name="Logger" doc:id="b4f2625a-23c4-4f13-8596-b3ce287d6a1b" message="#['Started subflow']"/>
+			<db:select doc:name="Select" doc:id="a44784d2-314b-4e16-88e5-c25e55947a28" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from employeedata.emp where EmpId=:EmpId;]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	
+EmpId: attributes.queryParams.EmpId
+	
+}]]]></db:input-parameters>
+		</db:select>
+			<logger level="INFO" doc:name="Logger" doc:id="2854ab2e-bfed-40d4-924f-700d654b24c1" message="#['ended subflow']"/>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="724a7ee6-974e-4888-9f1c-18a65b115af8" >
+					<logger level="INFO" doc:name="Logger" doc:id="4bc2a2b6-c6ff-401f-938c-a95ade51f369" message="#['Error Occured']"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<flow name="errorhandlingFlow" doc:id="a7c7a575-2a09-44ed-b7b2-e8fba78b963a">
+		<http:listener doc:name="Listener" doc:id="1156bd6c-23bb-4d98-ba42-18e9ebd12f88" config-ref="HTTP_Listener_config" path="/getid">
+			<http:error-response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.responsePhrase]">
+				<http:body><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="8898c10c-0ed1-46d2-83b6-8330030ec241" value="#[attributes.queryParams.EmpId]" message="EmpId should be integer" />
+		<flow-ref doc:name="Flow Reference" doc:id="0bb27a7b-d27f-4d4a-bcbe-d19680188421" name="errorhandlingSub_Flow" />
+		<choice doc:name="Choice" doc:id="8981271d-1490-45ae-b373-f29f5a12a4d0">
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="b4217356-5c7b-406d-ad77-72a194b7bc49">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"EmpId": payload[0].EmpId,
+	"EmpName":payload[0].EmpName,
+	"Age":payload[0].Age,
+	"Address":payload[0].Address
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Raise error" doc:id="220b85b0-78a6-426e-be9c-3c28bec17cf9" type="EMP:EMPLOYEE_NOT_FOUND" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

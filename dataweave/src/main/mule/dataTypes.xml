@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dataTypesFlow" doc:id="243d025e-65af-4228-b503-a2de65924425" >
+		<ee:transform doc:name="Transform Message" doc:id="663d6a05-8d6a-4d5d-8171-d21f77ffd8c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var emp ={
+	"EmpId": 318215,
+	"name": "Jaya",
+	"EmpStatus": "A",
+	
+} 
+---
+{
+	EmpId: emp.EmpId,
+	Name: emp.name,
+	EmpSalary: 80000 as Number,
+	EmpStatus: emp.EmpStatus
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

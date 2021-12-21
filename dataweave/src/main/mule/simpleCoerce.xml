@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="simpleCoerceFlow" doc:id="e87a2a02-1ace-4273-8e96-2cfe798f7afe" >
+		<ee:transform doc:name="Transform Message" doc:id="5da9eae9-ab5b-480d-a544-747dfb40d585" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+var employee = {
+	EmpName: "Jaya Kumar",
+	EmpLocation: null,
+	EmpExperience: "12",
+	EmpStatus: "true"
+}
+---
+{
+	EmpName: employee.EmpName as String default "",
+	EmpLocation: employee.EmpLocation as String default "",
+	EmpExperience: employee.EmpExperience as Number default 0,
+	EmpStatus: employee.EmpStatus as Boolean default false
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="simpleCoerceFlow1" doc:id="3502bfaf-4e77-4cf9-8d88-6611a3652088" >
+		<ee:transform doc:name="Transform Message" doc:id="2754e872-d91d-4e8c-a82c-23526408201c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"TodayDate": now() as Date {format: "yyyy-MM-dd"},
+	"TodayTime": now() as Time {format: "HH-mm-ss"},
+	"currentHour": now() as Time{format: "HH"},
+	"currentDateTime": now() as LocalDateTime{format: "yyyy-MM-dd HH:mm:ss.SSS"},
+	"UTCTime": ((now() >> "UTC") >> "IST") as DateTime {format: "yyyy-MM-dd HH:mm:ss"},
+	"ISTTime": now() >> "IST",
+	"ESTTime": now() >> "EST"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

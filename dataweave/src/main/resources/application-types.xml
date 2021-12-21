@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="empData" format="json">
+      <types:shape format="weave" example="examples/details2.json"><![CDATA[%dw 2.0
+
+type empData = {|
+  Name: String, 
+  "Account Name": String, 
+  Title: String, 
+  Phone: String, 
+  Email: String
+|} {"example": "{\\\"Name\\\":\\\"Jaya\\\",\\\"Account Name\\\":\\\"AxisBank\\\",\\\"Title\\\":\\\"SMT\\\",\\\"Phone\\\":\\\"9663457422\\\",\\\"Email\\\":\\\"Jayakumarthatiparthi1993@gmail.com\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="foodData" format="xml">
+      <types:example format="xml" element="food" location="examples/food.xml"/>
+    </types:type>
+    <types:type name="food" format="json">
+      <types:shape format="weave" example="examples/food1.json"><![CDATA[%dw 2.0
+
+type food = {|
+  food: {|
+    name: String, 
+    price: String, 
+    description: String, 
+    calories: Number {"typeId": "int"}
+  |}
+|} {"example": "{\\\"food\\\":{\\\"name\\\":\\\"Belgian Waffles\\\",\\\"price\\\":\\\"\$5.95\\\",\\\"description\\\":\\\"Two of our famous Belgian Waffles with plenty of real maple syrup\\\",\\\"calories\\\":650}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="foodcsv" format="csv">
+      <types:shape format="weave" example="examples/data2-2.csv"><![CDATA[%dw 2.0
+
+type foodcsv = Array<{|  name: String,   price: String,   description: String,   calories: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#7a997518-f026-4894-a781-d7c03d1e1e21">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="empData"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f7031108-2017-4741-bc9a-78599eafa2bb">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="empData"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="empData"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#3cd94ac8-d88e-424e-b21b-1cccbd53e382">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="foodData"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="foodcsv"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

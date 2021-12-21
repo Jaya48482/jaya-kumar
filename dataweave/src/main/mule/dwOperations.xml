@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dwOperationsFlow" doc:id="60b93717-0bc7-4775-a7c5-001676c98459" >
+		<ee:transform doc:name="Transform Message" doc:id="5966e32d-61a8-4d01-b1ba-05afcf7b4c70" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var firstNumber = 20
+var secondNumber = 10
+var firstName = "Jaya"
+var secondName = "kumar"
+var empNameArray = ["Jaya", "Kumar", "Mule"]
+var empObject = {
+	"EmpId": 308215,
+	"EmpName": "Jayakumar",
+	"EmpStatus": "A"	
+}
+var empList = [ {
+	"EmpId": 308216,
+	"EmpName": "Jaya",
+	"EmpStatus": "A"
+},
+{
+	"EmpId": 308217,
+	"EmpName": "kumar",
+	"EmpStatus": "A"
+}
+	
+]
+---
+[
+	{
+		"arthimeticOperations": {
+			Addition: firstNumber + secondNumber,
+			Subtraction: firstNumber - secondNumber,
+			Multiplication: firstNumber * secondNumber,
+			Division: firstNumber / secondNumber
+		}
+	},
+	{
+		"comparisonOperators":{
+			"equalTo": firstNumber == secondNumber,
+			"lessThan": firstNumber < secondNumber,
+			"greaterThan": firstNumber > secondNumber,
+			"notEqualTo": firstNumber != secondNumber,
+			"LessThanEqualTo":firstNumber <= secondNumber,
+			"greaterThanEqualTo":firstNumber >= secondNumber,
+		},
+		
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
