@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="26f519ab-cff6-41dd-8700-a1a4dcb8759f" >
+		<db:generic-connection url="jdbc:postgresql://localhost:5432/postgres" driverClassName="org.postgresql.Driver" user="postgres" password="Jaya@57422" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="02ceeb85-833b-47a4-9731-a0a3bac97266" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<flow name="pgdbFlow" doc:id="44d25198-9727-47be-bc85-1660e2cd079c" >
+		<http:listener doc:name="Listener" doc:id="77d631f7-66af-427b-a3d9-de8f8454c820" path="/select" config-ref="HTTP_Listener_config"/>
+		<db:select doc:name="Select" doc:id="7c131d2d-5825-4820-b57f-bb5ab4db4fe8" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM public."Banking"]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="b4f7d854-5eeb-4e87-b62e-64701ecf103c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( )-> {
+	CustName: $.CustomerName,
+	Custid: $.CustomerId
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="pgdbFlow1" doc:id="883b0ad1-09c4-4e05-a4f9-2a8521d4586c" >
+		<http:listener doc:name="Listener" doc:id="81913788-7e50-467f-b8a3-da26d9016ac8" config-ref="HTTP_Listener_config" path="/insert"/>
+		<db:insert doc:name="Insert" doc:id="ff9fdfd9-9903-4b10-bcc4-495ae17b31a4" config-ref="Database_Config">
+			<db:sql ><![CDATA[Insert into public."Banking" ("CustomerId", "CustomerName", "ContactNumber", "Address") values(:Id, :Name, :Number, :Address)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+
+Id: payload.CustomerId,
+Name: payload.CustomerName,
+Number: payload.ContactNumber,
+Address: payload.Address
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="06c70b1d-8eaa-46da-b518-5a8d70a0c36f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
