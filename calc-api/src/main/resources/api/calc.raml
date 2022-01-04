@@ -1,0 +1,37 @@
+#%RAML 1.0
+title: Calc
+version: v1
+description: This API will Perform arthmatic Operations.
+securedBy:
+  - 
+traits:
+  res: !include Traits/trait.raml
+mediaType: application/json
+/addition:
+  get:
+    is: [res]     
+    responses:
+      200:
+        body:
+            example:  !include Examples/additionresponse.json            
+/subtraction:
+  post:
+    is: [res]      
+    responses:
+      201:
+        body:
+            example:  !include Examples/subtractionresponse.json
+/multiplication:
+  put:
+    is: [res]
+    responses:
+      201:
+        body:
+            example:  !include Examples/mutliplicationresponse.json
+/division:
+  get:
+    is: [res]         
+    responses:
+      200:
+        body:
+            example:  !include Examples/divisionresponse.json
